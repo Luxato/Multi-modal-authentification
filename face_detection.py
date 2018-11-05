@@ -17,17 +17,19 @@ def find_face(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.5, minNeighbors=5)
 
-    if not faces:
-        return 0
-
+    is_face = 0
     for (x,y,w,h) in faces:
         roi_gray = gray[y:y+h, x:x+w]
         roi_color = image[y:y+h, x:x+w]
+        is_face = 1
 
-    return roi_color
+    if is_face == 0:
+        return 0
+    else:
+        return roi_color
 
-image = cv2.imread("I:\\POM-dataset\\new_dataset\\females\\Emma\\frame.jpg")
+#image = cv2.imread("I:\\POM-dataset\\new_dataset\\females\\Emma\\frame.jpg")
 
-cv2.imshow('image',find_face(image))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+#cv2.imshow('image',find_face(image))
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
