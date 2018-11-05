@@ -11,7 +11,6 @@ face_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_frontalface_alt2
 eye_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_eye.xml')
 smile_cascade = cv2.CascadeClassifier('cascades/data/haarcascade_smile.xml')
 
-# Gets image as
 # Returns either face from the image or false when there is no face.
 def find_face(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -27,9 +26,3 @@ def find_face(image):
         return 0
     else:
         return roi_color
-
-#image = cv2.imread("I:\\POM-dataset\\new_dataset\\females\\Emma\\frame.jpg")
-
-#cv2.imshow('image',find_face(image))
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
