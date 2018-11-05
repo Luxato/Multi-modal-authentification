@@ -30,11 +30,6 @@ for file in os.listdir(directory):
 
     success, image = cap.read()
 
-    # Generate random unique numbers in interval <0, number_of_frames>
-    random_frames = set()
-    while len(random_frames) < 30:
-        random_frames.add(random.randint(0, length))
-
     # Save frames into the array for easier access.
     frames = []
     while success:
@@ -46,7 +41,7 @@ for file in os.listdir(directory):
     iterator = 1
     random_frames = set()
     while iterator <= 30:
-        new_random_num = random.randint(0, length)
+        new_random_num = random.randint(0, length - 1)
         if new_random_num in random_frames:
             continue
         else:
