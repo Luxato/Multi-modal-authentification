@@ -1,63 +1,88 @@
-# Inspired by https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_tipping_problem_newapi.html#example-plot-tipping-problem-newapi-py
+# Inspired by https://pythonhosted.org/scikit-fuzzy/auto_examples/plot_fused_probabilityping_problem_newapi.html#example-plot-fused_probabilityping-problem-newapi-py
 
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import cv2
 
-# New Antecedent/Consequent objects hold universe variables and membership
-# functions
-quality = ctrl.Antecedent(np.arange(0, 11, 1), 'quality')  # scale 10
-service = ctrl.Antecedent(np.arange(0, 11, 1), 'service')  # scale 10
-tip = ctrl.Consequent(np.arange(0, 26, 1), 'tip')  # scale 25
+face = ctrl.Antecedent(np.arange(0, 101, 1), 'face')  # scale 100
+voice = ctrl.Antecedent(np.arange(0, 101, 1), 'voice')  # scale 100
+fused_probability = ctrl.Consequent(np.arange(0, 101, 1), 'fused_probability')  # scale 100
 
-# Auto-membership function population is possible with .automf(3, 5, or 7)
-quality.automf(3)
-service.automf(3)
+face.automf(3)
+voice.automf(3)
 
-# Custom membership functions can be built interactively with a familiar,
-# Pythonic API
-tip['low'] = fuzz.trimf(tip.universe, [0, 0, 13])
-tip['medium'] = fuzz.trimf(tip.universe, [0, 13, 25])
-tip['high'] = fuzz.trimf(tip.universe, [13, 25, 25])
-
-# View the graph
-quality['average'].view()
-service.view()
+fused_probability['No'] = fuzz.trimf(fused_probability.universe, [0, 0, 45])
+fused_probability['Not sure'] = fuzz.trimf(fused_probability.universe, [20, 60, 70])
+fused_probability['Yes'] = fuzz.trimf(fused_probability.universe, [35, 90, 100])
 
 
+rule1 = ctrl.Rule(face['poor'] | voice['poor'], fused_probability['No'])
+rule2 = ctrl.Rule(face['poor'] & voice['poor'], fused_probability['No'])
+rule3 = ctrl.Rule(face['poor'] & voice['average'], fused_probability['Not sure'])
+rule10 = ctrl.Rule(face['poor'] & voice['good'], fused_probability['Not sure'])
 
-rule1 = ctrl.Rule(quality['poor'] | service['poor'], tip['low'])
-rule2 = ctrl.Rule(service['average'], tip['medium'])
-rule3 = ctrl.Rule(service['good'] | quality['good'], tip['high'])
+rule6 = ctrl.Rule(face['average'] & voice['poor'], fused_probability['No'])
+rule7 = ctrl.Rule(face['average'] & voice['average'], fused_probability['Not sure'])
+rule9 = ctrl.Rule(face['average'] & voice['good'], fused_probability['Yes'])
 
-print("test111")
+rule4 = ctrl.Rule(voice['good'] | face['good'], fused_probability['Yes'])
+rule5 = ctrl.Rule(voice['good'] & face['good'], fused_probability['Yes'])
+#rule8 = ctrl.Rule(face['good'] & voice['average'], fused_probability['Yes'])
 
-#rule1.view()
+
 
 # Apply the rules
-tipping_ctrl = ctrl.ControlSystem([rule1, rule2, rule3])
+fused_probabilityping_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule9, rule10])
 
-print("test123")
+def get_fusion_face_voice_accuracy(face_probability, voice_probablity, show_graphs = False):
 
-# Simulation
-tipping = ctrl.ControlSystemSimulation(tipping_ctrl)
+    # View the graph
+    if show_graphs:
+        face['average'].view()
+        voice.view()
 
-print("test456")
+    # See the rules.
+    if show_graphs:
+        rule1.view()
 
-# Pass inputs to the ControlSystem using Antecedent labels with Pythonic API
-# Note: if you like passing many inputs all at once, use .inputs(dict_of_data)
-tipping.input['quality'] = 6.5
-tipping.input['service'] = 9.8
+    # Simulation
+    fused_probabilityping = ctrl.ControlSystemSimulation(fused_probabilityping_ctrl)
 
-print("test789")
+    fused_probabilityping.input['face'] = face_probability
+    fused_probabilityping.input['voice'] = voice_probablity
 
-# Crunch the numbers
-tipping.compute()
+    # Crunch the numbers
+    fused_probabilityping.compute()
 
-print(tipping.output['tip'])
+    if show_graphs:
+        fused_probability.view(sim=fused_probabilityping)
+        cv2.waitKey()
 
-tip.view(sim=tipping)
+    return fused_probabilityping.output['fused_probability']
+    #TODO output as json
 
 
-cv2.waitKey()
+
+
+
+# print("35 and 35: " + str(get_fusion_face_voice_accuracy(35, 35, 0)))
+# print("90 and 90: " + str(get_fusion_face_voice_accuracy(90, 90, 0)))
+# print("25 and 25: " + str(get_fusion_face_voice_accuracy(25, 25, 0)))
+# print("90 and 25: " + str(get_fusion_face_voice_accuracy(90, 25, 0)))
+# print("25 and 90: " + str(get_fusion_face_voice_accuracy(25, 90, 0)))
+#
+#
+# print("80 and 40: " + str(get_fusion_face_voice_accuracy(80, 40, 0)))
+# print("80 and 60: " + str(get_fusion_face_voice_accuracy(80, 60, 0)))
+# print("50 and 50: " + str(get_fusion_face_voice_accuracy(50, 50, 0)))
+# print("40 and 40: " + str(get_fusion_face_voice_accuracy(40, 40, 0)))
+# print("60 and 40: " + str(get_fusion_face_voice_accuracy(60, 40, 0)))
+# print("40 and 60: " + str(get_fusion_face_voice_accuracy(40, 60, 0)))
+# print("30 and 30: " + str(get_fusion_face_voice_accuracy(30, 30, 0)))
+# print("10 and 30: " + str(get_fusion_face_voice_accuracy(10, 30, 0)))
+# print("30 and 10: " + str(get_fusion_face_voice_accuracy(30, 10, 0)))
+# print("15 and 15: " + str(get_fusion_face_voice_accuracy(15, 15, 0)))
+# print("5 and 5: " + str(get_fusion_face_voice_accuracy(5, 5, 0)))
+
+
