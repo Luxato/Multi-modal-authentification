@@ -1,14 +1,15 @@
 # This code was inspired by book - Python Deep Learning Cookbook
 # URL: https://www.packtpub.com/mapt/book/big_data_and_business_intelligence/9781787125193
 
-import glob
+# How to turn Tensorboard on to monitor training http://fizzylogic.nl/2017/05/08/monitor-progress-of-your-keras-based-neural-network-using-tensorboard/
+# Command to execute: tensorboard --logdir=logs/
+
 import numpy as np
 import random
 import librosa
-from sklearn.model_selection import train_test_split
+
 from sklearn.preprocessing import LabelBinarizer
 
-import keras
 from keras.layers import LSTM, Dense, Dropout, Flatten
 from keras.models import Sequential
 from keras.optimizers import Adam
@@ -19,6 +20,8 @@ from matplotlib import pyplot
 from os import listdir
 from os.path import isfile, join
 
+from time import time
+from keras.callbacks import TensorBoard
 
 DATA_DIR = 'C:\\wamp64\\www\\Multi-modal-authentification\\voices\\'
 
@@ -88,7 +91,7 @@ n_epochs = 60
 dropout = 0.8
 
 input_shape = (n_features, max_length)
-steps_per_epoch = 30
+steps_per_epoch = 35
 
 model = Sequential()
 model.add(LSTM(256, return_sequences=True, input_shape=input_shape,
@@ -100,10 +103,14 @@ model.add(Dense(n_classes, activation='softmax'))
 
 opt = Adam(lr=learning_rate)
 model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+tensorboard = TensorBoard(log_dir="./logs/{}".format(time()))
+
 model.summary()
 
 callbacks = [ModelCheckpoint('checkpoints/voice_recognition_best_model_{epoch:02d}.hdf5', save_best_only=True),
-            EarlyStopping(monitor='val_acc', patience=2)]
+            EarlyStopping(monitor='val_acc', patience=2),
+             tensorboard,]
 
 model.json = model.to_json()
 with open("./model.json", "w") as json_file:
